@@ -449,22 +449,21 @@ export default class extends Component {
   }
 
   /**
-   * Scroll by index
-   * @param  {number} index offset index
+   * Scroll to index
+   * @param  {number} index
    * @param  {bool} animated
    */
+  scrollTo = (index, animated = true) => {
+    const state = this.state;
+    if (this.internals.isScrolling || state.total < 2) return
 
-  scrollBy = (index, animated = true) => {
-    if (this.internals.isScrolling || this.state.total < 2) return
-    const state = this.state
-    const diff = (this.props.loop ? 1 : 0) + index + this.state.index
     let x = 0
     let y = 0
-    if (state.dir === 'x') x = diff * state.width
-    if (state.dir === 'y') y = diff * state.height
+    if (state.dir === 'x') x = index * state.width
+    if (state.dir === 'y') y = index * state.height
 
     if (Platform.OS !== 'ios') {
-      this.scrollView && this.scrollView[animated ? 'setPage' : 'setPageWithoutAnimation'](diff)
+      this.scrollView && this.scrollView[animated ? 'setPage' : 'setPageWithoutAnimation'](index)
     } else {
       this.scrollView && this.scrollView.scrollTo({ x, y, animated })
     }
@@ -480,11 +479,22 @@ export default class extends Component {
       setImmediate(() => {
         this.onScrollEnd({
           nativeEvent: {
-            position: diff
+            position: index
           }
         })
       })
     }
+  }
+
+  /**
+   * Scroll by index
+   * @param  {number} offset offset index
+   * @param  {bool} animated
+   */
+
+  scrollBy = (offset, animated = true) => {
+    const index = (this.props.loop ? 1 : 0) + offset + this.state.index
+    this.scrollTo(index, animated);
   }
 
   scrollViewPropOverrides = () => {
